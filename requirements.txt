@@ -4,3 +4,5 @@ python-dotenv
 urllib3
 flask-mail
 Flask-mail
+APScheduler
+schedule

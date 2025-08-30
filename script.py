@@ -13,7 +13,7 @@ def get_product_hunt_data(after = None):
     }
     query ="""
     query getPosts($after: String) {
-      posts(first: 3, after: $after) {
+      posts(first: 10, after: $after) {
         edges {
           cursor
           node {
@@ -25,7 +25,7 @@ def get_product_hunt_data(after = None):
             thumbnail {
               url
             }
-            topics(first: 3) {
+            topics(first: 10) {
               edges {
                 node {
                   name
