@@ -1,11 +1,283 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Product Hunt Insights</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlLCA=" crossorigin=""></script>
+    <style>
+        body {
+            background-color: aliceblue;
+            color: darkslategray;
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+
+        .tab-button.active {
+            color: chocolate;
+            border-bottom: 2px solid chocolate;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #map {
+            height: 350px;
+            border-radius: 0.5rem;
+        }
+    </style>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-puJW3E/qXDqYp9IfhAI54BJEaWIfloJ7JWs7OeD5i6ruC9JZL1gERT1wjtwXFlh7CjE7ZJ+/vcRZRkIYIb6p4g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
-<body>
-    Hii people
+
+<body class="antialiased">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <svg class="h-8 w-8 text-orange-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-3.996-3.996M21 12l-3.996-3.996" />
+                    </svg>
+                    <h1 class="text-xl font-bold text-slate-800">Product Hunt Insights</h1>
+                </div>
+                <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
+                    <a href="#" class="tab-button" onclick="openTab(event, 'top-products')">Top Products</a>
+                    <a href="#" class="tab-button" onclick="openTab(event, 'search')">Search & Filter</a>
+                    <a href="#" class="tab-button" onclick="openTab(event, 'contact')">Contact & Newsletter</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 py-8">
+        <div class="max-w-7xl mx-auto">
+            <!-- Tab Content -->
+            <div id="tab-content">
+                <div id="top-products" class="tab-pane">
+                    <!-- About Section -->
+                    <section id="about" class="py-12 mb-12">
+                        <div class="max-w-4xl mx-auto text-center">
+                            <h2 class="text-4xl font-extrabold text-slate-900 tracking-tight">Understand the Tech Landscape</h2>
+                            <p class="mt-4 text-lg text-slate-600">This dashboard is a community-driven project designed to provide a quick and easy way to explore the latest trends in the tech industry. It leverages the Product Hunt API to fetch and display the top products, and it provides a simple interface for searching and filtering the results.</p>
+                        </div>
+                    </section>
+                    <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+                    <div id="loader" class="loader hidden"></div>
+                </div>
+
+                <div id="search" class="tab-pane hidden">
+                    <div class="bg-white p-8 rounded-xl shadow-md">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <input type="text" id="search-input" class="w-full p-4 bg-slate-100 text-slate-800 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow" placeholder="Search by name, tagline...">
+                            <input type="text" id="tags-input" class="w-full p-4 bg-slate-100 text-slate-800 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500 transition-shadow" placeholder="Filter by comma-separated tags...">
+                        </div>
+                    </div>
+                    <div id="search-results-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8"></div>
+                </div>
+
+                <div id="contact" class="tab-pane hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-5 gap-12">
+                        <div class="md:col-span-3 bg-white p-8 rounded-xl shadow-md">
+                            <h2 class="text-3xl font-bold text-slate-900 mb-6">Get in Touch</h2>
+                            <p class="text-slate-600 mb-4">Have questions or feedback? Reach out to us.</p>
+                            <div class="space-y-4">
+                                <p class="flex items-center"><svg class="w-5 h-5 mr-3 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path></svg> <a href="mailto:lakshya.kesarwani@iitgn.ac.in" class="hover:text-orange-500">lakshya.kesarwani@iitgn.ac.in</a></p>
+                                <p class="flex items-center"><svg class="w-5 h-5 mr-3 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg> IIT Gandhinagar, Gujarat, India</p>
+                            </div>
+                            <div id="map" class="mt-6"></div>
+                        </div>
+                        <div class="md:col-span-2 bg-white p-8 rounded-xl shadow-md">
+                            <h2 class="text-3xl font-bold text-slate-900 mb-6">Subscribe to Our Newsletter</h2>
+                            <p class="text-slate-600 mb-6">Get the top 3 products delivered to your inbox daily. No spam, we promise.</p>
+                            <form id="subscribe-form">
+                                <input type="email" id="email-input" class="w-full p-4 bg-slate-100 text-slate-800 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Enter your email">
+                                <button type="submit" class="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-colors">Subscribe Now</button>
+                            </form>
+                            <p id="subscribe-message" class="text-center mt-4"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let allProducts = [], hasNextPage = true, endCursor = null, isLoading = false;
+
+        function openTab(event, tabId) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.remove('hidden');
+            event.currentTarget.classList.add('active');
+            
+            const aboutSection = document.getElementById('about');
+            if (tabId === 'top-products') {
+                aboutSection.classList.remove('hidden');
+            } else {
+                aboutSection.classList.add('hidden');
+            }
+            
+            if (tabId === 'contact' && !document.getElementById('map')._leaflet_id) {
+                initMap();
+            }
+        }
+        
+        function filterByTag(tagName) {
+            const searchTabButton = document.querySelector('.tab-button[onclick*="search"]');
+            openTab({ currentTarget: searchTabButton }, 'search');
+            
+            document.getElementById('tags-input').value = tagName;
+            filterAndDisplayProducts();
+        }
+
+        async function initializeApp() {
+            document.querySelector('.tab-button').classList.add('active');
+            await fetchProducts();
+            setupInfiniteScroll();
+            setupEventListeners();
+        }
+
+        async function fetchProducts(isLoadMore = false) {
+            if (isLoading || !hasNextPage) return;
+            isLoading = true;
+            if(isLoadMore) document.getElementById('loader').classList.remove('hidden');
+
+            try {
+                const url = endCursor ? `/api/products?after=${endCursor}` : '/api/products';
+                const response = await fetch(url);
+                if (!response.ok) {
+                    const data = await response.json();
+                    throw new Error(data.error || 'Failed to fetch products');
+                }
+                const data = await response.json();
+
+                const { edges, pageInfo } = data.data.posts;
+                allProducts.push(...edges);
+                hasNextPage = pageInfo.hasNextPage;
+                endCursor = pageInfo.endCursor;
+                displayProducts(allProducts, 'products-grid');
+
+            } catch (error) {
+                document.getElementById('products-grid').innerHTML = `<p class="text-center col-span-full text-red-500">${error.message}</p>`;
+            } finally {
+                isLoading = false;
+                if(isLoadMore) document.getElementById('loader').classList.add('hidden');
+            }
+        }
+        
+        function displayProducts(products, gridId) {
+            const grid = document.getElementById(gridId);
+            if (gridId === 'products-grid' && grid.children.length === 0) grid.innerHTML = '';
+            products.slice(grid.children.length).forEach(({ node }) => { grid.innerHTML += createProductCard(node); });
+        }
+
+        function filterAndDisplayProducts() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const tagsTerm = document.getElementById('tags-input').value.toLowerCase();
+            const tags = tagsTerm.split(',').map(t => t.trim()).filter(Boolean);
+            
+            const filtered = allProducts.filter(({ node }) => {
+                const topics = node.topics.edges.map(edge => edge.node.name.toLowerCase());
+                const nameMatch = node.name.toLowerCase().includes(searchTerm);
+                const taglineMatch = node.tagline.toLowerCase().includes(searchTerm);
+                const tagsMatch = tags.length === 0 || tags.every(tag => topics.some(topic => topic.includes(tag)));
+                return (nameMatch || taglineMatch) && tagsMatch;
+            });
+
+            const grid = document.getElementById('search-results-grid');
+            grid.innerHTML = '';
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="text-center col-span-full text-slate-500">No products found matching your criteria.</p>';
+            } else {
+                filtered.forEach(({ node }) => { grid.innerHTML += createProductCard(node); });
+            }
+        }
+
+        function createProductCard(node) {
+            const topics = node.topics.edges.map(edge => 
+                `<a href="#" onclick="event.preventDefault(); filterByTag('${edge.node.name.replace(/'/g, "\\'")}')" class="bg-slate-200 text-slate-600 text-xs font-semibold mr-2 px-3 py-1 rounded-full hover:bg-orange-200 hover:text-orange-800 transition-colors">${edge.node.name}</a>`
+            ).join('');
+            return `
+                <div class="bg-white rounded-2xl shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 ease-in-out">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <img src="${node.thumbnail ? node.thumbnail.url : 'https://via.placeholder.com/88'}" alt="${node.name} logo" class="w-20 h-20 rounded-lg mr-6 object-cover flex-shrink-0 border-2 border-slate-200">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800">${node.name}</h2>
+                                <p class="text-slate-500 mt-1 text-sm">${node.tagline}</p>
+                            </div>
+                        </div>
+                        <div class="text-sm text-slate-500 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="font-semibold text-slate-600">▲ ${node.votesCount} Upvotes</span>
+                                <span class="font-semibold text-slate-600">💬 ${node.commentsCount} Comments</span>
+                            </div>
+                        </div>
+                        <div class="mt-5 pt-5 border-t border-slate-200">${topics}</div>
+                        <a href="${node.url}" target="_blank" class="block w-full text-center bg-orange-500 text-white font-bold py-3 px-4 rounded-lg mt-5 hover:bg-orange-600 transition-colors">View on Product Hunt</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setupInfiniteScroll() {
+            window.addEventListener('scroll', () => {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500 && !isLoading) {
+                   if(document.getElementById('top-products').offsetParent !== null) fetchProducts(true);
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('search-input').addEventListener('input', filterAndDisplayProducts);
+            document.getElementById('tags-input').addEventListener('input', filterAndDisplayProducts);
+            document.getElementById('subscribe-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('email-input').value;
+                const messageEl = document.getElementById('subscribe-message');
+                try {
+                    const response = await fetch('/api/subscribe', { 
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const result = await response.json();
+                    if(!response.ok) throw new Error(result.error);
+                    messageEl.textContent = result.message;
+                    messageEl.style.color = '#10B981';
+                } catch (error) {
+                    messageEl.textContent = error.message;
+                    messageEl.style.color = '#EF4444';
+                }
+            });
+        }
+        
+        function initMap() {
+            if(document.getElementById('map')._leaflet_id) return;
+            var map = L.map('map').setView([23.2129, 72.6853], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+            L.marker([23.2129, 72.6853]).addTo(map)
+                .bindPopup('IIT Gandhinagar.')
+                .openPopup();
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+
 </body>
 </html>

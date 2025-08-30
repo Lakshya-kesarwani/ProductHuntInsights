@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
-
+import os
+import requests
 load_dotenv()
 
 product_hunt_api = os.getenv("PRODUCT_HUNT_API_TOKEN")
