@@ -1,14 +1,11 @@
 from flask import Flask, jsonify, request
 import os
 import requests
-from dotenv import load_dotenv
-
-load_dotenv()
+from script import get_product_hunt_data
 
 app = Flask(__name__,static_folder='static')
 
-product_hunt_url = "https://api.producthunt.com/v2/api/graphql"
-product_hunt_api = os.getenv("PRODUCT_HUNT_API_TOKEN")
+
 
 @app.route("/")
 def index():
