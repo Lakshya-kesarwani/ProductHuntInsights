@@ -4,12 +4,12 @@ Product Hunt Insights is a web application that provides a streamlined overview 
 
 ## Features
 
--   **Top Products:** Displays the top 30 trending products from Product Hunt.
+-   **Top Products:** Displays the top trending products from Product Hunt as the user scrolls down.
 -   **Search & Filter:** Allows users to search and filter products by name, tagline, or tags.
 -   **Category Pages:** Enables users to browse products by category.
 -   **Daily Newsletter:** Sends a daily email with the top 10 products to subscribers.
 -   **Contact & Newsletter Subscription:** Provides a form to collect email addresses for the newsletter.
--   **Professional CRM-like Layout:** Features a clean, white layout with a modern header and a professional aesthetic.
+-   **Professional Layout:** Features a clean, white layout with a modern header and a professional aesthetic.
 
 ## Setup
 
@@ -41,7 +41,7 @@ Product Hunt Insights is a web application that provides a streamlined overview 
 
 4.  **Run the application:**
     ```bash
-    ./devserver.sh
+    python main.py
     ```
 
 ## Usage

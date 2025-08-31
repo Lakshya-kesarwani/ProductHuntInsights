@@ -111,13 +111,43 @@ def subscribe():
         with open("subscribers.csv", "a", newline="") as f:
             writer = csv.writer(f)
             writer.writerow([email])
+        
+        # Send welcome email
+        with app.app_context():
+            msg = Message(
+                "Welcome to Product Hunt Insights Newsletter!",
+                recipients=[email],
+                sender=app.config['MAIL_DEFAULT_SENDER']
+            )
+            msg.html = """
+            <html>
+            <head>
+                <style>
+                    body { font-family: Arial, sans-serif; }
+                    .welcome { background: #f6f8fa; padding: 24px; border-radius: 8px; }
+                    h2 { color: #ff6600; }
+                </style>
+            </head>
+            <body>
+                <div class="welcome">
+                    <h2>Welcome!</h2>
+                    <p>Thank you for subscribing to Product Hunt Insights.</p>
+                    <p>You will receive the top 10 products from Product Hunt every day at <b>9:00 AM</b>.</p>
+                    <p>Stay tuned for the latest trends in tech!</p>
+                    <p style="margin-top:24px;">— The Product Hunt Insights Team</p>
+                </div>
+            </body>
+            </html>
+            """
+            mail.send(msg)
+            print("Welcome msg sent to :", email)
         return jsonify({"message": "Successfully subscribed!"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     scheduler = BackgroundScheduler()
-    scheduler.add_job(send_daily_email, 'cron', hour=23, minute=31)
+    scheduler.add_job(send_daily_email, 'cron', hour=9, minute=0)  # Send daily at 9:00 AM
     scheduler.start()
 
     app.run(debug = True)

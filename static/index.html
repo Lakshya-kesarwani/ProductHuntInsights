@@ -52,12 +52,25 @@
                     </svg>
                     <h1 class="text-xl font-bold text-slate-800">Product Hunt Insights</h1>
                 </div>
+                <!-- Desktop Nav -->
                 <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
                     <a href="#" class="tab-button" onclick="openTab(event, 'top-products')">Top Products</a>
                     <a href="#" class="tab-button" onclick="openTab(event, 'search')">Search & Filter</a>
                     <a href="#" class="tab-button" onclick="openTab(event, 'contact')">Contact & Newsletter</a>
                 </nav>
+                <!-- Hamburger for mobile -->
+                <button id="hamburger-btn" class="md:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-orange-100 focus:outline-none" aria-label="Open menu">
+                    <svg class="w-7 h-7 text-orange-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
             </div>
+            <!-- Mobile Nav (hidden by default) -->
+            <nav id="mobile-nav" class="md:hidden absolute right-4 top-16 bg-white rounded-xl shadow-lg py-4 px-6 space-y-4 text-sm font-medium text-slate-600 z-50 hidden">
+                <a href="#" class="tab-button block" onclick="openTab(event, 'top-products'); closeMobileNav();">Top Products</a>
+                <a href="#" class="tab-button block" onclick="openTab(event, 'search'); closeMobileNav();">Search & Filter</a>
+                <a href="#" class="tab-button block" onclick="openTab(event, 'contact'); closeMobileNav();">Contact & Newsletter</a>
+            </nav>
         </div>
     </header>
 
@@ -279,6 +292,18 @@
         }
 
         document.addEventListener('DOMContentLoaded', initializeApp);
+
+        // Hamburger menu logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const mobileNav = document.getElementById('mobile-nav');
+            hamburgerBtn.addEventListener('click', () => {
+                mobileNav.classList.toggle('hidden');
+            });
+            window.closeMobileNav = function() {
+                mobileNav.classList.add('hidden');
+            };
+        });
     </script>
 
 </body>
