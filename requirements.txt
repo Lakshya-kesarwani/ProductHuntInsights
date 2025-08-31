@@ -6,3 +6,4 @@ flask-mail
 Flask-mail
 APScheduler
 schedule
+gunicorn
