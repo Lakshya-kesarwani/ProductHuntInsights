@@ -11,6 +11,25 @@ Product Hunt Insights is a web application that provides a streamlined overview 
 -   **Contact & Newsletter Subscription:** Provides a form to collect email addresses for the newsletter.
 -   **Professional Layout:** Features a clean, white layout with a modern header and a professional aesthetic.
 
+## User Interface 
+
+<table>
+  <tr>
+    <td>
+      <img src="static/image.png" alt="Portrait Screenshot" width="265" style="border-radius:8px;">
+    </td>
+    <td>
+      <img src="static/img1.png" alt="Landscape Screenshot 1" width="320" style="border-radius:8px;">
+      <br>
+      <img src="static/img2.png" alt="Landscape Screenshot 2" width="320" style="border-radius:8px;">
+      <br>
+      <img src="static/img3.png" alt="Landscape Screenshot 3" width="320" style="border-radius:8px;">
+    </td>
+  </tr>
+</table>
+The Test email-id used here for sending mail is : 'library.services.iitgn@gmail.com'
+
+
 ## Setup
 
 1.  **Clone the repository:**
@@ -58,7 +77,5 @@ Product Hunt Insights is a web application that provides a streamlined overview 
 -   python-dotenv
 -   requests
 -   APScheduler
-
-```
 
 
